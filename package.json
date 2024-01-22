@@ -1,0 +1,17 @@
+{
+  "name": "test-clickup",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script-clickup.js",
+  "type": "module",
+  "scripts": {
+    "test": "start"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "api": "^6.1.1",
+    "dotenv": "^16.3.2",
+    "inquirer": "^9.2.12"
+  }
+}
