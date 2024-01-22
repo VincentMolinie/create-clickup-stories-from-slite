@@ -3,6 +3,13 @@ import fetch from 'node-fetch';
 import inquirer from 'inquirer';
 const prompt = inquirer.createPromptModule();
 
+if (!process.env.SLITE_API_SECRET_KEY) {
+  throw new Error('Missing SLITE_API_SECRET_KEY env variable');
+}
+if (!process.env.CLICKUP_API_KEY) {
+  throw new Error('Missing CLICKUP_API_KEY env variable');
+}
+
 const teamsToListId = {
   'Ops Xp Team': 25602981,
   'Agent Team': 152668835,
