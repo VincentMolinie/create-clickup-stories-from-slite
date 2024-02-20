@@ -35,22 +35,22 @@ async function getSliteNote(noteId) {
   return await response.json();
 }
 
-async function getTags() {
-  const spaceId = '2453539';
-  const resp = await fetch(
-    `https://api.clickup.com/api/v2/space/${spaceId}/tag`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: process.env.CLICKUP_API_KEY,
-      }
-    }
-  );
+// async function getTags() {
+//   const spaceId = '2453539';
+//   const resp = await fetch(
+//     `https://api.clickup.com/api/v2/space/${spaceId}/tag`,
+//     {
+//       method: 'GET',
+//       headers: {
+//         'Content-Type': 'application/json',
+//         Authorization: process.env.CLICKUP_API_KEY,
+//       }
+//     }
+//   );
 
-  const data = await resp.json();
-  return data.tags?.map(tag => tag.name) || ['Workspace'];
-}
+//   const data = await resp.json();
+//   return data.tags?.map(tag => tag.name) || ['Workspace'];
+// }
 
 async function createTask(taskName, cost, sliteNoteLink, tags, listId) {
   const query = new URLSearchParams({
@@ -58,7 +58,7 @@ async function createTask(taskName, cost, sliteNoteLink, tags, listId) {
     team_id: '123'
   }).toString();
 
-  const resp = await fetch(
+  const response = await fetch(
     `https://api.clickup.com/api/v2/list/${listId}/task?${query}`,
     {
       method: 'POST',
@@ -116,7 +116,7 @@ prompt([{
     const noteId = answers.noteLink.split('/').pop();
     const sliteNode = await getSliteNote(noteId);
 
-    const stories = sliteNode.content.match(/#{2,3} Story [,\w#\s-]+/g);
+    const stories = sliteNode.content.match(/#{2,3} Story [^\n]+/g);
     await Promise.all([stories.map(story => {
       const startIndex = story.indexOf('Story');
       const parts = story.split(' - ');
