@@ -117,11 +117,11 @@ prompt([{
     const sliteNode = await getSliteNote(noteId);
 
     const stories = sliteNode.content.match(/#{2,3} Story [^\n]+/g);
-    await Promise.all([stories.map(story => {
+    for (const story of stories) {
       const startIndex = story.indexOf('Story');
       const parts = story.split(' - ');
       const [cost] = parts.pop().match(/\d+/g) || [];
       const storyName = parts.join(' - ').substring(startIndex);
-      return createTask(`${answers.scopeName} - ${storyName}`, cost, answers.noteLink, [answers.tag], teamsToListId[answers.team]);
-    })]);
+      await createTask(`${answers.scopeName} - ${storyName}`, cost, answers.noteLink, [answers.tag], teamsToListId[answers.team]);
+    }
   })
