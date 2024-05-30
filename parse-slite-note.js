@@ -92,6 +92,15 @@ async function createTask(taskName, cost, sliteNoteLink, tags, listId) {
   return response.json();
 }
 
+async function hasConfirmedTaskCreation(taskName, cost) {
+  const result = await prompt([{
+    name: 'confirm',
+    message: `Create task "${taskName}" with "${cost}" story points?`,
+    type: 'confirm',
+  }]);
+  return result.confirm;
+}
+
 
 prompt([{
   name: 'noteLink',
@@ -103,7 +112,7 @@ prompt([{
   type: 'input',
 }, {
   name: 'tag',
-  message: "Which tag do you want to attach to the stories?",
+  message: "Which tag do you want to attach to the stories? (seperated by pipe '|')",
   type: 'input',
 }, {
   name: 'team',
@@ -111,6 +120,10 @@ prompt([{
   type: 'list',
   choices: Object.keys(teamsToListId),
   default: 'Ops Team',
+}, {
+  name: 'confirm',
+  message: 'Do you want a confirmation before creating each task?',
+  type: 'confirm',
 }])
   .then(async answers => {
     const noteId = answers.noteLink.split('/').pop();
@@ -122,6 +135,10 @@ prompt([{
       const parts = story.split(' - ');
       const [cost] = parts.pop().match(/\d+/g) || [];
       const storyName = parts.join(' - ').substring(startIndex);
-      await createTask(`${answers.scopeName} - ${storyName}`, cost, answers.noteLink, [answers.tag], teamsToListId[answers.team]);
+      const taskName = `${answers.scopeName} - ${storyName}`;
+      const tags = answers.tag.split('|');
+      if (!answers.confirm || await hasConfirmedTaskCreation(taskName, cost)) {
+        await createTask(taskName, cost, answers.noteLink, tags, teamsToListId[answers.team]);
+      }
     }
   })
