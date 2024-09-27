@@ -74,6 +74,7 @@ async function createTask(taskName, cost, sliteNoteLink, tags, listId) {
         tags: tags || [],
         status: '📦to do',
         check_required_custom_fields: true,
+        points: customFieldsNameToIds.storyPoints ? Number.parseInt(customFieldsNameToIds.storyPoints) : undefined,
         custom_fields: [
           {
             id: customFieldsNameToIds.linkToEpic,
