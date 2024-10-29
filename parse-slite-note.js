@@ -74,7 +74,7 @@ async function createTask(taskName, cost, sliteNoteLink, tags, listId) {
         tags: tags || [],
         status: '📦to do',
         check_required_custom_fields: true,
-        points: customFieldsNameToIds.storyPoints ? Number.parseInt(customFieldsNameToIds.storyPoints) : undefined,
+        points: cost ? Number.parseInt(cost) : undefined,
         custom_fields: [
           {
             id: customFieldsNameToIds.linkToEpic,
@@ -89,8 +89,12 @@ async function createTask(taskName, cost, sliteNoteLink, tags, listId) {
     }
   );
 
+  const result = await response.json();
+  if (result.err) {
+    throw new Error(`Error creating task: ${result.err}`);
+  }
   console.log('Task created:', taskName);
-  return response.json();
+  return result;
 }
 
 async function hasConfirmedTaskCreation(taskName, cost) {
