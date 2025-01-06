@@ -10,6 +10,7 @@ if (!process.env.CLICKUP_API_KEY) {
   throw new Error('Missing CLICKUP_API_KEY env variable');
 }
 
+const fibonaccis = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
 const teamsToListId = {
   'Ops Xp Team': 25602981,
   'Agent Team': 152668835,
@@ -52,7 +53,7 @@ async function getSliteNote(noteId) {
 //   return data.tags?.map(tag => tag.name) || ['Workspace'];
 // }
 
-async function createTask(taskName, cost, sliteNoteLink, tags, listId) {
+async function createTask(taskName, cost, sliteNoteLink, tags, listId, parentTask) {
   const query = new URLSearchParams({
     custom_task_ids: 'true',
     team_id: '123'
@@ -74,6 +75,7 @@ async function createTask(taskName, cost, sliteNoteLink, tags, listId) {
         tags: tags || [],
         status: '📦to do',
         check_required_custom_fields: true,
+        parent: parentTask?.id,
         points: cost ? Number.parseInt(cost) : undefined,
         custom_fields: [
           {
@@ -82,7 +84,7 @@ async function createTask(taskName, cost, sliteNoteLink, tags, listId) {
           },
           {
             id: customFieldsNameToIds.storyPoints,
-            value: cost,
+            value: fibonaccis.indexOf(cost),
           }
         ]
       })
@@ -97,10 +99,11 @@ async function createTask(taskName, cost, sliteNoteLink, tags, listId) {
   return result;
 }
 
-async function hasConfirmedTaskCreation(taskName, cost) {
+async function hasConfirmedTaskCreation(taskName, cost, parentTask) {
+  const suffix = parentTask ? ` (Subtask of "${parentTask.name}")` : '';
   const result = await prompt([{
     name: 'confirm',
-    message: `Create task "${taskName}" with "${cost}" story points?`,
+    message: `Create task "${taskName}" with "${cost}" story points${suffix}?`,
     type: 'confirm',
   }]);
   return result.confirm;
@@ -134,7 +137,8 @@ prompt([{
     const noteId = answers.noteLink.split('/').pop();
     const sliteNode = await getSliteNote(noteId);
 
-    const stories = sliteNode.content.match(/#{2,3} Story [^\n]+/g);
+    const stories = sliteNode.content.match(/#{2,4} (Sub(-)?)?Story ([^\n]+)?/g);
+    let latestParentTask;
     for (const story of stories) {
       const startIndex = story.indexOf('Story');
       const parts = story.split(' - ');
@@ -142,8 +146,12 @@ prompt([{
       const storyName = parts.join(' - ').substring(startIndex);
       const taskName = `${answers.scopeName} - ${storyName}`;
       const tags = answers.tag.split('|');
-      if (!answers.confirm || await hasConfirmedTaskCreation(taskName, cost)) {
-        await createTask(taskName, cost, answers.noteLink, tags, teamsToListId[answers.team]);
+      const isSubTask = story.toLowerCase().includes('sub-story') || story.toLowerCase().includes('substory');
+      if (!answers.confirm || await hasConfirmedTaskCreation(taskName, cost, isSubTask ? latestParentTask : undefined)) {
+        const task = await createTask(taskName, cost, answers.noteLink, tags, teamsToListId[answers.team], isSubTask ? latestParentTask : undefined);
+        if (!isSubTask) {
+          latestParentTask = task;
+        }
       }
     }
   })
