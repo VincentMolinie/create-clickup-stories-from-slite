@@ -84,7 +84,7 @@ async function createTask(taskName, cost, sliteNoteLink, tags, listId, parentTas
           },
           {
             id: customFieldsNameToIds.storyPoints,
-            value: fibonaccis.indexOf(cost),
+            value: fibonaccis.indexOf(Number.parseInt(cost)),
           }
         ]
       })
