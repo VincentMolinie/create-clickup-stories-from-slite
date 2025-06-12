@@ -12,9 +12,9 @@ if (!process.env.CLICKUP_API_KEY) {
 
 const fibonaccis = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
 const teamsToListId = {
-  'Ops Xp Team': 25602981,
+  'Flow Team': 901510835271,
   'Agent Team': 152668835,
-  'Dev Xp Team': 25602976,
+  'Platform Team': 186886568,
 };
 
 const customFieldsNameToIds = {
@@ -137,7 +137,7 @@ prompt([{
     const noteId = answers.noteLink.split('/').pop();
     const sliteNode = await getSliteNote(noteId);
 
-    const stories = sliteNode.content.match(/#{2,4} (Sub(-)?)?Story ([^\n]+)?/g);
+    const stories = sliteNode.content.match(/#{2,4}\s*(?:.+)?\s*(Sub(-)?)?Story ([^\n]+)?/g);
     let latestParentTask;
     for (const story of stories) {
       const startIndex = story.indexOf('Story');
